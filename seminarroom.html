@@ -9,11 +9,11 @@
   <body>
     <a-scene id="scene" background="color: white" renderer="colorManagement: true">
       <a-plane src="#ground" height="400" width="400" rotation="-90 0 0" color="#363"></a-plane>      
-      <a-camera id="head" position="-8 1.7 -1" look-controls mc-controls></a-camera>
+      <!--
+        <a-camera id="head" position="-8 1.7 -1" look-controls mc-controls></a-camera>
+      -->
       <a-entity id="cameraRig">
-        <!--
         <a-entity id="head" camera position="-8 1.7 -1" mc-controls x-wasd-controls-mode2 look-controls x-drone-controls-mode2 raycaster="objects: .collidable; far: 0.5;" collider-check></a-entity>
-        -->
         <a-entity oculus-touch-controls="hand:left" teleport-controls="button:trigger; collisionEntities:.collidable; cameraRig:#cameraRig; teleportOrigin:#head;"></a-entity>
         <a-entity oculus-touch-controls="hand:right" teleport-controls="button:trigger; collisionEntities:.collidable; cameraRig:#cameraRig; teleportOrigin:#head;"></a-entity>
       </a-entity>
