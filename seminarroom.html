@@ -1,188 +1,350 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://rawgit.com/fernandojsg/aframe-teleport-controls/master/dist/aframe-teleport-controls.min.js"></script>
-    <script type="module" src="https://code4fukui.github.io/glb-viewer/mc-controls.js"></script>
-  </head>
-  <body>
-    <a-scene id="scene" background="color: white" renderer="colorManagement: true">
-      <a-plane src="#ground" height="400" width="400" rotation="-90 0 0" color="#363"></a-plane>      
-      <!--
-        <a-camera id="head" position="-8 1.7 -1" look-controls mc-controls></a-camera>
-      -->
-      <a-entity id="cameraRig">
-        <a-entity id="head" camera position="-8 1.7 -1" mc-controls x-wasd-controls-mode2 look-controls x-drone-controls-mode2 raycaster="objects: .collidable; far: 0.5;" collider-check></a-entity>
-        <a-entity oculus-touch-controls="hand:left" teleport-controls="button:trigger; collisionEntities:.collidable; cameraRig:#cameraRig; teleportOrigin:#head;"></a-entity>
-        <a-entity oculus-touch-controls="hand:right" teleport-controls="button:trigger; collisionEntities:.collidable; cameraRig:#cameraRig; teleportOrigin:#head;"></a-entity>
-      </a-entity>
-    </a-scene>
-  
+<head>
+  <meta charset="utf-8">
+  <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+  <script src="https://rawgit.com/fernandojsg/aframe-teleport-controls/master/dist/aframe-teleport-controls.min.js"></script>
+  <script type="module" src="https://code4fukui.github.io/glb-viewer/mc-controls.js"></script>
+</head>
+<body>
+  <a-scene id="scene" background="color: white" renderer="colorManagement: true">
+    <a-sky color="#7be"></a-sky>
+    <!--
+      <a-plane src="#ground" height="400" width="400" rotation="-90 0 0" color="#f33" green-color="#363"></a-plane>      
+    -->
+    <!--
+    <a-torus-knot p="5" q="1" position="-5 .2 -5" color="orange" rotation="90 0 0" scale=".3 .3 .3"></a-torus-knot>
+    -->
+
+<!--      <a-camera id="head" position="-13 1.7 -5" look-controls mc-controls></a-camera>
+  -->
+    <a-entity id="cameraRig">
+      <a-entity id="head" camera position="-8 1.7 -1" mc-controls x-wasd-controls-mode2 look-controls x-drone-controls-mode2 raycaster="objects: .collidable; far: 0.5;" collider-check></a-entity>
+      <a-entity oculus-touch-controls="hand:left" teleport-controls="button:trigger; collisionEntities:.collidable; cameraRig:#cameraRig; teleportOrigin:#head;"></a-entity>
+      <a-entity oculus-touch-controls="hand:right" teleport-controls="button:trigger; collisionEntities:.collidable; cameraRig:#cameraRig; teleportOrigin:#head;"></a-entity>
+    </a-entity>
+  </a-scene>
+
 <script type="module">
-  const height = 3.6;
+import { rnd } from "https://js.sabae.cc/rnd.js";
+import { createKitchen } from "./createKitchen.js";
 
-  const plate = (x, y, w, h, z) => {
-    const box = document.createElement("a-box");
-    box.setAttribute("position", { x: x - w / 2, y: z, z: y - h / 2 });
-    box.setAttribute("width", w);
-    box.setAttribute("height", 0.1);
-    box.setAttribute("depth", h);
-    box.setAttribute("color", "#444")
-    scene.appendChild(box);
-    return box;
-  };
-  const ceiling = (x, y, w, h, z) => {
-    const box = plate(x, y, w, h, z);
-    box.setAttribute("color", "#ccc")
-    return box;
-  };
-  const wallX = (x, y, w, z) => {
-    const h = 0.1;
-    const box = document.createElement("a-box");
-    box.setAttribute("position", { x: x - w / 2, y: z + height / 2, z: y - h / 2 });
-    box.setAttribute("width", w);
-    box.setAttribute("height", height);
-    box.setAttribute("depth", h);
-    box.setAttribute("color", "#ddd")
-    scene.appendChild(box);
-  };
-  const wallY = (x, y, h, z) => {
-    const w = 0.1;
-    const box = document.createElement("a-box");
-    box.setAttribute("position", { x: x - w / 2, y: z + height / 2, z: y - h / 2 });
-    box.setAttribute("width", w);
-    box.setAttribute("height", height);
-    box.setAttribute("depth", h);
-    box.setAttribute("color", "#ddd")
-    scene.appendChild(box);
-  };
-  const room = (x, y, w, h) => {
-    plate(0, 0, w, h, 0);
-    ceiling(0, 0, w, h, height);
-    wallX(0, 0, w, 0);
-    wallX(0, -h, w, 0);
-    //wallY(0, 0, h, 0);
-    wallY(-w, 0, h, 0);
-  };
-  const w = 22;
-  const h = 12;
-  room(0, 0, w, h);
-  
-  const makeTable = (w = 1.8, h = .6) => {
-    const p = document.createElement("a-entity");
-    const x = 0;
-    const y = 0;
-    const z = .7;
-    const box = document.createElement("a-box");
-    box.setAttribute("position", { x: x - w / 2, y: z, z: y - h / 2 });
-    box.setAttribute("width", w);
-    box.setAttribute("height", 0.03);
-    box.setAttribute("depth", h);
-    box.setAttribute("color", "#eee")
-    p.appendChild(box);
+// util
+const createEntity = () => document.createElement("a-entity");
+const setPos = (p, x, y, z) => {
+  p.setAttribute("position", { x, y, z });
+  return p;
+}
+const setRot = (p, x, y, z) => {
+  p.setAttribute("rotation", { x, y, z });
+  return p;
+};
 
-    const leg1 = document.createElement("a-box");
-    leg1.setAttribute("position", { x: x - .01, y: z - z / 2, z: y - h / 2 });
-    leg1.setAttribute("width", 0.05);
-    leg1.setAttribute("height", 0.66);
-    leg1.setAttribute("depth", 0.03);
-    leg1.setAttribute("color", "#222")
-    p.appendChild(leg1);
 
-    const leg2 = document.createElement("a-box");
-    leg2.setAttribute("position", { x: x - w + .01, y: z - z / 2, z: y - h / 2 });
-    leg2.setAttribute("width", 0.05);
-    leg2.setAttribute("height", 0.66);
-    leg2.setAttribute("depth", 0.03);
-    leg2.setAttribute("color", "#222")
-    p.appendChild(leg2);
-    return p;
-  };
-  const makeEntity = () => document.createElement("a-entity");
-  const makeChair = () => {
-    const p = document.createElement("a-entity");
-    const x = 0;
-    const y = 0;
-    const z = .43;
-    const w = .5;
-    const h = .5;
-    const box = document.createElement("a-box");
-    box.setAttribute("position", { x: x - w / 2, y: z, z: y - h / 2 });
-    box.setAttribute("width", w);
-    box.setAttribute("height", 0.03);
-    box.setAttribute("depth", h);
-    box.setAttribute("color", "#555")
-    p.appendChild(box);
+const height = 3.6;
 
-    const leg1 = document.createElement("a-box");
-    leg1.setAttribute("position", { x: x - w / 2, y: z, z: y });
-    leg1.setAttribute("width", w);
-    leg1.setAttribute("height", h * 2);
-    leg1.setAttribute("depth", 0.03);
-    leg1.setAttribute("color", "#555")
-    p.appendChild(leg1);
+const plate = (x, y, w, h, z) => {
+  const box = document.createElement("a-box");
+  box.setAttribute("position", { x: x - w / 2, y: z, z: y - h / 2 });
+  box.setAttribute("width", w);
+  box.setAttribute("height", 0.1);
+  box.setAttribute("depth", h);
+  box.setAttribute("color", "#444")
+  return box;
+};
+const ceiling = (x, y, w, h, z) => {
+  const box = plate(x, y, w, h, z);
+  box.setAttribute("color", "#aaa")
+  return box;
+};
+const wallX = (x, y, w, z) => {
+  const h = 0.1;
+  const box = document.createElement("a-box");
+  box.setAttribute("position", { x: x - w / 2, y: z + height / 2, z: y - h / 2 });
+  box.setAttribute("width", w);
+  box.setAttribute("height", height);
+  box.setAttribute("depth", h);
+  box.setAttribute("color", "#ddd")
+  return box;
+};
+const wallY = (x, y, h, z) => {
+  const w = 0.1;
+  const box = document.createElement("a-box");
+  box.setAttribute("position", { x: x - w / 2, y: z + height / 2, z: y - h / 2 });
+  box.setAttribute("width", w);
+  box.setAttribute("height", height);
+  box.setAttribute("depth", h);
+  box.setAttribute("color", "#ddd")
+  return box;
+};
+const room = (x, y, w, h) => {
+  const kw = -4.886 - .04;
+  const r = createEntity();
+  [
+    plate(0, 0, w, h, 0),
+    ceiling(0, 0, w, h, height),
+    wallX(0, 0, w, 0),
+    wallX(0, -h, w, 0),
+    //wallY(0, 0, h, 0),
+    //wallY(-w, 0, h, 0),
+    wallY(-w, kw, h + kw, 0),
+    wallY(-w, 0, h, 2.6),
+  ].forEach(p => r.appendChild(p));
+  r.setAttribute("position", { x: 0, y: -.06, z: 0 });
 
-    const leg2 = document.createElement("a-box");
-    leg2.setAttribute("position", { x: x - w / 2, y: z - z / 2, z: y - h });
-    leg2.setAttribute("width", w);
-    leg2.setAttribute("height", h - .03);
-    leg2.setAttribute("depth", 0.03);
-    leg2.setAttribute("color", "#555")
-    p.appendChild(leg2);
+  const k = createKitchen();
+  r.appendChild(setPos(setRot(k, 0, 90, 0), -23.75, 0, -2.5));
 
-    return p;
-  };
-  const makeTableSet = () => {
-    const a = makeEntity();
-    const t = makeTable();
-    a.appendChild(t);
-    const c = makeChair();
-    c.setAttribute("position", { x: -.2, y: 0, z: .6 });
-    a.appendChild(c);
-    const c2 = makeChair();
-    c2.setAttribute("position", { x: -1.8 + .2 + .4, y: 0, z: .6 });
-    a.appendChild(c2);
-    return a;
-  };
+  scene.appendChild(r);
 
-  const seminar = () => {
-    for (let i = 0; i < 6; i++) {
-      for (let j = 0; j < 4; j++) {
-        const p = makeTableSet();
-        p.setAttribute("position", { x: -15 + i * 2.5, y: 0, z: -8 + j * 2 });
-        scene.appendChild(p);
-      }
-    }
-  };
-  const event = () => {
-    for (let i = 0; i < 6; i++) {
-      const p = makeTableSet();
-      p.setAttribute("position", { x: -18 + i * 2.5, y: 0, z: -10 });
-      p.setAttribute("rotation", { x: 0, y: 180, z: 0 });
-      scene.appendChild(p);
-    }
-    for (let i = 0; i < 6; i++) {
-      const p = makeTableSet();
-      p.setAttribute("position", { x: -18 + i * 2.5, y: 0, z: -2 });
-      //p.setAttribute("rotation", { x: 0, y: 180, z: 0 });
-      scene.appendChild(p);
-    }
-    for (let i = 0; i < 3; i++) {
-      const p = makeTableSet();
-      p.setAttribute("position", { x: -3, y: 0, z: -9 + i * 2 });
-      p.setAttribute("rotation", { x: 0, y: 90, z: 0 });
-      scene.appendChild(p);
-    }
-  };
+};
+const w = 22;
+const h = 12;
+room(0, 0, w, h);
 
-  const f = document.location.hash.substring(1);
-  console.log(f);
-  if (f == "event") {
-    event();
-  } else {
-    seminar();
+if (!navigator.userAgent.indexOf("Quest") >= 0) {
+  const cam = document.createElement("a-camera");
+  //cam.setAttribute("look-controls", true);
+  cam.setAttribute("mc-controls", true);
+  scene.appendChild(cam);
+}
+
+const makeTable = (w = 1.8, h = .6) => {
+  const p = document.createElement("a-entity");
+  const x = 0;
+  const y = 0;
+  const z = .7;
+  const box = document.createElement("a-box");
+  box.setAttribute("position", { x: x - w / 2, y: z, z: y - h / 2 });
+  box.setAttribute("width", w);
+  box.setAttribute("height", 0.03);
+  box.setAttribute("depth", h);
+  box.setAttribute("color", "#eee")
+  p.appendChild(box);
+
+  const leg1 = document.createElement("a-box");
+  leg1.setAttribute("position", { x: x - .01, y: z - z / 2, z: y - h / 2 });
+  leg1.setAttribute("width", 0.05);
+  leg1.setAttribute("height", 0.66);
+  leg1.setAttribute("depth", 0.03);
+  leg1.setAttribute("color", "#222")
+  p.appendChild(leg1);
+
+  const leg2 = document.createElement("a-box");
+  leg2.setAttribute("position", { x: x - w + .01, y: z - z / 2, z: y - h / 2 });
+  leg2.setAttribute("width", 0.05);
+  leg2.setAttribute("height", 0.66);
+  leg2.setAttribute("depth", 0.03);
+  leg2.setAttribute("color", "#222")
+  p.appendChild(leg2);
+  return p;
+};
+const createBox = (x, y, z, w, h, d, col = "#555") => {
+  const box = document.createElement("a-box");
+  //box.setAttribute("position", { x: x + w / 2, y: y + h / 2, z: z + d / 2 });
+  box.setAttribute("position", { x: x - w / 2, y: y - h / 2, z: z - d / 2 });
+  box.setAttribute("width", w);
+  box.setAttribute("height", h);
+  box.setAttribute("depth", d);
+  box.setAttribute("color", col)
+  return box;
+}
+const createCylinder = (x, y, z, r, d, col = "#555") => {
+  const box = document.createElement("a-cylinder");
+  //box.setAttribute("position", { x: x + w / 2, y: y + h / 2, z: z + d / 2 });
+  //box.setAttribute("position", { x: x - r / 2, y: y - r / 2, z: z - d / 2 });
+  box.setAttribute("position", { x, y, z });
+  box.setAttribute("radius", r);
+  box.setAttribute("height", d);
+  box.setAttribute("color", col)
+  return box;
+};
+const makeChair = () => {
+  const p = document.createElement("a-entity");
+  const x = 0;
+  const y = 0;
+  const z = .43;
+  const w = .5;
+  const h = .5;
+  const box = document.createElement("a-box");
+  box.setAttribute("position", { x: x - w / 2, y: z, z: y - h / 2 });
+  box.setAttribute("width", w);
+  box.setAttribute("height", 0.03);
+  box.setAttribute("depth", h);
+  box.setAttribute("color", "#555")
+  p.appendChild(box);
+
+  const leg1 = document.createElement("a-box");
+  leg1.setAttribute("position", { x: x - w / 2, y: z, z: y });
+  leg1.setAttribute("width", w);
+  leg1.setAttribute("height", h * 2);
+  leg1.setAttribute("depth", 0.03);
+  leg1.setAttribute("color", "#555")
+  p.appendChild(leg1);
+
+  const leg2 = document.createElement("a-box");
+  leg2.setAttribute("position", { x: x - w / 2, y: z - z / 2, z: y - h });
+  leg2.setAttribute("width", w);
+  leg2.setAttribute("height", h - .03);
+  leg2.setAttribute("depth", 0.03);
+  leg2.setAttribute("color", "#555")
+  p.appendChild(leg2);
+  return p;
+};
+const makeTableSet = () => {
+  const a = createEntity();
+  const t = makeTable();
+  a.appendChild(t);
+  const c = makeChair();
+  c.setAttribute("position", { x: -.2, y: 0, z: .6 });
+  a.appendChild(c);
+  const c2 = makeChair();
+  c2.setAttribute("position", { x: -1.8 + .2 + .4, y: 0, z: .6 });
+  a.appendChild(c2);
+  return a;
+};
+const setAtt = (p, param) => {
+  for (const name in param) {
+    p.setAttribute(name, param[name]);
   }
+};
+const createOrangeSofa = () => {
+  /*
+  const t = document.createElement("a-torus-knot");
+  setAtt(t, { p: 5, q: 1, position: "-5 .2 -5", color: "orange", rotation: "90 0 0", scale: ".3 .3 .3" });
+  */
+  const t = document.createElement("a-sphere");
+  setAtt(t, { color: "orange", rotation: "90 0 0", scale: ".6 .6 .3" });
+  return t;
+};
+const createHighChair = () => {
+  const h = .7;
+  const p = createEntity();
+  p.appendChild(setRot(createCylinder(0, h, 0, .4 / 2, .06, "orange"), 0, 0, 0));
+  p.appendChild(setRot(createCylinder(0, h / 2, 0, .04, .75, "#333"), 0, 0, 0));
+  return p;
+};
+
+const seminar = () => {
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 4; j++) {
+      const p = makeTableSet();
+      p.setAttribute("position", { x: -15 + i * 2.5, y: 0, z: -8 + j * 2 });
+      scene.appendChild(p);
+    }
+  }
+};
+const event = () => {
+  for (let i = 0; i < 6; i++) {
+    const p = makeTableSet();
+    p.setAttribute("position", { x: -18 + i * 2.5, y: 0, z: -10 });
+    p.setAttribute("rotation", { x: 0, y: 180, z: 0 });
+    scene.appendChild(p);
+  }
+  for (let i = 0; i < 6; i++) {
+    const p = makeTableSet();
+    p.setAttribute("position", { x: -18 + i * 2.5, y: 0, z: -2 });
+    //p.setAttribute("rotation", { x: 0, y: 180, z: 0 });
+    scene.appendChild(p);
+  }
+  for (let i = 0; i < 3; i++) {
+    const p = makeTableSet();
+    p.setAttribute("position", { x: -3, y: 0, z: -9 + i * 2 });
+    p.setAttribute("rotation", { x: 0, y: 90, z: 0 });
+    scene.appendChild(p);
+  }
+};
+const createTable2 = () => {
+  const g = createEntity();
+  const p1 = makeTableSet();
+  p1.setAttribute("position", { x: -3, y: 0, z: 0 });
+  const p2 = makeTableSet();
+  p2.setAttribute("position", { x: -3 - 1.8, y: 0, z: -1.2});
+  p2.setAttribute("rotation", { x: 0, y: 180, z: 0 });
+  g.appendChild(p1);
+  g.appendChild(p2);
+  return g;
+};
+const createWhiteBoard = () => {
+  const p = createEntity();
+  const board = createBox(0, 1.8, 0, 1.8, .9, 0.03);
+  board.setAttribute("color", "white");
+  p.appendChild(createBox(.03, 1.83, 0, 0.03, 1.8, 0.03, "black"));
+  p.appendChild(createBox(-1.8, 1.83, 0, 0.03, 1.8, 0.03, "black"));
+  p.appendChild(board);
+  return p;
+};
+const createLowSofa = () => {
+  const p = createEntity();
+  p.appendChild(createBox(0, .35, 0, 1, .20, 2, "#afa"));
+  p.appendChild(createBox(0, .15, 0, .05, .10, .05, "#222"));
+  p.appendChild(createBox(-1 + .05, .15, 0, .05, .10, .05, "#222"));
+  p.appendChild(createBox(0, .15, -2 + .05, .05, .10, .05, "#222"));
+  p.appendChild(createBox(-1 + .05, .15, -2 + .05, .05, .10, .05, "#222"));
+  return p;
+};
+const createTV = () => { // 65inch
+  const p = createEntity();
+  p.appendChild(createBox(0, 2, 0, 1.45, .84, .06, "#111"));
+  p.appendChild(createBox(-(1.45 - .6) / 2, 2, -.08, .6, 2, .06, "#111"));
+  p.appendChild(createBox(-(1.45 - 1) / 2, .08, .4, 1, .06, .8, "#111"));
+  return p;
+  
+};
+const group = () => {
+  for (let i = 0; i < 2; i++) {
+    for (let j = 0; j < 2; j++) {
+      const g = createTable2();
+      g.setAttribute("position", { x: -6 + i * 5, y: 0, z: -8 + j * 5 });
+      scene.appendChild(g);
+
+    }
+  }
+  for (let i = 0; i < 2; i++) {
+    const b = createWhiteBoard();
+    setRot(b, 0, 90, 0);
+    setPos(b, -7.5, 0, -4.5 + i * -5);
+    scene.appendChild(b);
+  }
+  // orange sofa
+  for (let i = 0; i < 7; i++) {
+    const p = createOrangeSofa();
+    setAtt(p, { position: { x: -13 - rnd(4), y: .1, z: -6 + rnd(5) }});
+    scene.appendChild(p);
+  }
+  // low sofa
+  [
+    setPos(createLowSofa(), -17, 0, -7),
+    setRot(setPos(createLowSofa(), -15 + .2, 0, -8), 0, 90, 0),
+  ].forEach(a => scene.appendChild(a));
+  // tv
+  scene.appendChild(setRot(setPos(createTV(), -14, 0, -10), 0, 0, 0));
+  // high table
+  scene.appendChild(createBox(-21.2, 1.1, -8.5, .8, .06, 3.5, "brown"));
+  // cicle high table
+  scene.appendChild(setRot(createCylinder(-17, 1.1, -3, .62 / 2, .06, "brown"), 0, 0, 0));
+  scene.appendChild(setRot(createCylinder(-17, 1.1 / 2, -3, .04, 1.1, "#333"), 0, 0, 0));
+  scene.appendChild(setPos(createHighChair(), -17, 0, -3 + .5));
+  scene.appendChild(setPos(createHighChair(), -17, 0, -3 - .5));
+
+  //
+  //scene.appendChild(setPos(createPlant(), -));
+  // chair
+  for (let i = 0; i < 5; i++) {
+
+  }
+
+};
+
+const f = document.location.hash.substring(1);
+console.log(f);
+if (f == "event") {
+  event();
+} else if (f == "seminar") {
+  seminar();
+} else {
+  group();
+}
 </script>
 </body>
 </html>
