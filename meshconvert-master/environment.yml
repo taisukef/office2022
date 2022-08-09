@@ -1,7 +1,0 @@
-name: meshconvert
-channels:
-  - defaults
-dependencies:
-  - trimesh
-  - pymeshlab
-
